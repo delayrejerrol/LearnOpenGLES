@@ -29,6 +29,8 @@ add_library( # Sets the name of the library.
              # Model
              src/main/cpp/model/TextureGenerator.cpp
              src/main/cpp/model/TextureGenerator.h
+             src/main/cpp/model/SpriteSheet.cpp
+             src/main/cpp/model/SpriteSheet.h
 
              # Renderer
              src/main/cpp/opengles/GLRenderer.cpp

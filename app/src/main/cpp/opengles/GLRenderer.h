@@ -50,8 +50,11 @@ private:
     const int FIXED_HEIGHT = 568;
 
     int mCurrentTime;
+    int spriteNum = 0;
 
     bool mClearSurface;
+    bool isUseFirstCloud;
+    bool isUseSecondCloud;
 
     // GL handle
     GLuint imageProgramHandle;

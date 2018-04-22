@@ -73,8 +73,8 @@ void GLRenderer::create() {
 
 
     // createTextures
-    //textures[0] = GLUtils::loadTexture("coin/coin_1.png");
-    textures[0] = GLUtils::loadTexture("bg.jpg");
+    textures[0] = GLUtils::loadTexture("coin/coin_1.png");
+    //textures[0] = GLUtils::loadTexture("bg.jpg");
     textures[1] = GLUtils::loadTexture("coin/coin_2.png");
     textures[2] = GLUtils::loadTexture("coin/coin_3.png");
     textures[3] = GLUtils::loadTexture("coin/coin_4.png");
@@ -84,24 +84,55 @@ void GLRenderer::create() {
     textures[7] = GLUtils::loadTexture("coin/coin_8.png");
 
     TextureGenerator* textureGenerator = new TextureGenerator();
-    textureGenerator->setSize(320.0f, 568.0f);
-    textureGenerator->setTranslate(320.0f / 2.0f, 568.0f / 2.0f);
+    textureGenerator->setSize(0, 0); // Update size in change();
+    textureGenerator->setTranslate(0.0f, 0.0f);
+    //textureGenerator->setTranslate(0.0f, 0.0f);
     textureGenerator->setIndex(INDEX_BG);
-    textureGenerator->setTextureId(textures[0]);
+    textureGenerator->setTextureId(GLUtils::loadTexture("bg.png"));
     mTextureCollection.push_back(textureGenerator);
+
+    /*textureGenerator = new TextureGenerator();
+    textureGenerator->setSize(1024.0f, 150.0f);
+    textureGenerator->setTranslate(0.0f, 30.0f);
+    textureGenerator->hideX();
+    textureGenerator->setIndex(INDEX_CLOUD_FIRST);
+    textureGenerator->setTextureId(GLUtils::loadTexture("clouds.png"));
+    mTextureCollection.push_back(textureGenerator);
+
+    textureGenerator = new TextureGenerator();
+    textureGenerator->setSize(1024.0f, 150.0f);
+    textureGenerator->setTranslate(0.0f, 30.0f);
+    textureGenerator->hideX();
+    textureGenerator->setIndex(INDEX_CLOUD_SECOND);
+    textureGenerator->setTextureId(GLUtils::loadTexture("clouds.png"));
+    mTextureCollection.push_back(textureGenerator);*/
+
+    //textureGenerator = new TextureGenerator(1, 888, 770, 148, 110);
+    textureGenerator = new TextureGenerator();
+    textureGenerator->setSize(888, 770);
+    textureGenerator->setMaxFrames(42);
+    textureGenerator->setSpriteSize(148, 110);
+    textureGenerator->setTranslate(0.0f, 30.0f);
+    textureGenerator->setIndex(INDEX_FRAME_CHICKEN);
+    textureGenerator->setTextureId(GLUtils::loadTexture("chicken.png"));
+    mTextureCollection.push_back(textureGenerator);
+
+    isUseFirstCloud = true;
+    isUseSecondCloud = false;
 }
 
 void GLRenderer::change(int width, int height) {
-//    screenWidth = width;
-//    screenHeight = height;
+    screenWidth = width;
+    screenHeight = height;
 
     glViewport(0, 0, width, height);
 
     // Create a new perspective projection matrix. The height will stay the same
     // while the width will vary as per aspect ratio.
-    float left = FIXED_WIDTH;
+    float aspect = width / height;
+    float left = screenWidth;
     float right = 0.0f;
-    float bottom = FIXED_HEIGHT;
+    float bottom = screenHeight;
     float top = 0.0f;
     float near = 1.0f;
     float far = 50.0f;
@@ -130,6 +161,13 @@ void GLRenderer::change(int width, int height) {
     mMVPMatrix->multiply(*mProjectionMatrix, *mViewMatrix);
 
     setupScaling(width, height);
+
+    for (int i = 0; i < mTextureCollection.size(); i++) {
+        if (mTextureCollection[i]->getIndex() == INDEX_BG) {
+            mTextureCollection[i]->setSize((int)screenWidth, (int)screenHeight);
+            break;
+        }
+    }
 }
 
 void GLRenderer::draw() {
@@ -169,19 +207,103 @@ void GLRenderer::dirtFrame() {
     }*/
     for (unsigned i = 0; i < mTextureCollection.size(); i++) {
         TextureGenerator* texture = mTextureCollection.at(i);
-
+        int elapse = GLUtils::getElapseRealtime();
         // if (i == 0) continue;
 
         if (texture->getIndex() == INDEX_COIN) {
             texture->translate(0.0f, 10.0f);
-
             if (texture->getTranslateY() > 410.0f) {
                 // mTextureCollection.pop_back();
                 mTextureCollection.erase(mTextureCollection.begin() + i);
             }
+        } else if (texture->getIndex() == INDEX_CLOUD_FIRST) {
+            if (isUseFirstCloud) {
+                texture->translate(1.0f, 0.0f);
+                if (texture->getTranslateX() >= 30.0f) {
+                    isUseSecondCloud = true;
+                }
+
+                if (texture->getTranslateX() > screenWidth) {
+                    texture->hideX();
+                    isUseFirstCloud = false;
+                }
+            }
+        } else if (texture->getIndex() == INDEX_CLOUD_SECOND) {
+            if (isUseSecondCloud) {
+                texture->translate(1.0f, 0.0f);
+                if (texture->getTranslateX() >= 30.0f) {
+                    isUseFirstCloud = true;
+                }
+
+                if (texture->getTranslateX() > screenWidth) {
+                    texture->hideX();
+                    isUseSecondCloud = false;
+                }
+            }
+        } /*else if (texture->getIndex() == INDEX_FRAME_CHICKEN) {
+
+            texture->changeFrameIndex();
+        }*/
+
+        // texture->changeFrameIndex();
+        if (mCurrentTime < elapse) {
+            LOGI("ELAPSE");
+            if (texture->getIndex() == INDEX_FRAME_CHICKEN) {
+                LOGI("CHICKEN");
+            }
+            texture->changeFrameIndex();
         }
 
-        texture->render(textures[0], mMVPMatrix, mPositionHandle, mTexCoord, mMatrixHandle, mSamplerLoc);
+
+        /*if (isUseFirstCloud) {
+            if (texture->getIndex() == INDEX_CLOUD_FIRST) {
+                if (texture->getTranslateX() < 0.0f) {
+                    texture->translate(1.0f, 0.0f);
+                } else if (texture->getTranslateX() > 0.0f) {
+                    if (!isUseSecondCloud) isUseSecondCloud = true;
+                }
+
+                if (texture->getTranslateX() > FIXED_WIDTH) {
+                    texture->hideX();
+                    isUseFirstCloud = false;
+                }
+            }
+        }
+
+        if (isUseSecondCloud) {
+            if (texture->getIndex() == INDEX_CLOUD_SECOND) {
+                if (texture->getTranslateX() < 0.0f) {
+                    texture->translate(1.0f, 0.0f);
+                } else if (texture->getTranslateX() > 0.0f) {
+                    if (!isUseFirstCloud) isUseFirstCloud = true;
+                }
+
+                if (texture->getTranslateX() > FIXED_WIDTH) {
+                    texture->hideX();
+                    isUseSecondCloud = false;
+                }
+            }
+        }*/
+
+        //texture->render(texture->getTextureId(), mMVPMatrix, mPositionHandle, mTexCoord, mMatrixHandle, mSamplerLoc);
+        /*if (mCurrentTime < elapse) spriteNum += 1;
+        if (spriteNum > 42) {
+            spriteNum = 1;
+            //continue;
+        }*/
+        /*LOGI("LOOP.");
+        if (mCurrentTime < elapse) {
+            if (texture->getIndex() == INDEX_FRAME_CHICKEN) {
+                LOGI("CHICKEN.");
+                if (texture->isSpriteSheet()) {
+                    LOGI("Texture is sprite");
+                    texture->changeFrameIndex();
+                }
+            }
+        }*/
+        texture->render(texture->getTextureId(), mMVPMatrix, mPositionHandle, mTexCoord, mMatrixHandle, mSamplerLoc);
+        //texture->renderSprite(20, 1, spriteNum, texture->getTextureId(), mMVPMatrix, mPositionHandle, mTexCoord, mMatrixHandle, mSamplerLoc);
+        mCurrentTime = elapse;
     }
 }
 

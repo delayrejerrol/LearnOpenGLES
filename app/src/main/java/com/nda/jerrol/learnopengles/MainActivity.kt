@@ -40,11 +40,11 @@ class MainActivity : AppCompatActivity() {
         view_main_glsurface.setEGLContextClientVersion(2)
         view_main_glsurface.setRenderer(renderer)
 
-        button.setOnClickListener({
+        /*button.setOnClickListener({
             view_main_glsurface.queueEvent ({
                 renderListener.drawCoin(editText.text.toString().toInt())
             })
-        })
+        })*/
     }
 
     external fun nativeSurfaceCreated(assetManager: AssetManager)
