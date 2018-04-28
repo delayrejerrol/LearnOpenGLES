@@ -47,7 +47,6 @@ GLRenderer::~GLRenderer() {
 
 void GLRenderer::create() {
     LOGD("create");
-    setupScaling(0, 0);
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
@@ -84,8 +83,8 @@ void GLRenderer::create() {
     textures[7] = GLUtils::loadTexture("coin/coin_8.png");
 
     TextureGenerator* textureGenerator = new TextureGenerator();
-    textureGenerator->setSize(0, 0); // Update size in change();
-    textureGenerator->setTranslate(0.0f, 0.0f);
+    textureGenerator->setSize(1, 1); // Update size in change();
+    textureGenerator->setTranslate(-1.0f, 1.0f);
     //textureGenerator->setTranslate(0.0f, 0.0f);
     textureGenerator->setIndex(INDEX_BG);
     textureGenerator->setTextureId(GLUtils::loadTexture("bg.png"));
@@ -107,18 +106,19 @@ void GLRenderer::create() {
     textureGenerator->setTextureId(GLUtils::loadTexture("clouds.png"));
     mTextureCollection.push_back(textureGenerator);*/
 
-    //textureGenerator = new TextureGenerator(1, 888, 770, 148, 110);
     textureGenerator = new TextureGenerator();
-    textureGenerator->setSize(888, 770);
-    textureGenerator->setMaxFrames(42);
-    textureGenerator->setSpriteSize(148, 110);
+    textureGenerator->setSize(80, 80);
     textureGenerator->setTranslate(0.0f, 30.0f);
-    textureGenerator->setIndex(INDEX_FRAME_CHICKEN);
-    textureGenerator->setTextureId(GLUtils::loadTexture("chicken.png"));
+    textureGenerator->setIndex(INDEX_COIN);
+    textureGenerator->setTextureId(GLUtils::loadTexture("coin/coin_1.png"));
     mTextureCollection.push_back(textureGenerator);
+
+    mSpriteChicken = new TextureGenerator();
+    // mSpriteChicken->setTextureId(GLUtils::loadTexture("chicken.png"));
 
     isUseFirstCloud = true;
     isUseSecondCloud = false;
+
 }
 
 void GLRenderer::change(int width, int height) {
@@ -129,20 +129,50 @@ void GLRenderer::change(int width, int height) {
 
     // Create a new perspective projection matrix. The height will stay the same
     // while the width will vary as per aspect ratio.
-    float aspect = width / height;
-    float left = screenWidth;
+    if (width > height) {
+        mAspectRatio = (float)width / (float)height;
+    } else {
+        mAspectRatio = (float)height / (float)width;
+    }
+    // mAspectRatio = (float)width / (float)height;
+    LOGI("Aspect Ratio: %.2f", mAspectRatio);
+
+    /*float left = screenWidth;
     float right = 0.0f;
     float bottom = screenHeight;
     float top = 0.0f;
     float near = 1.0f;
-    float far = 50.0f;
+    float far = 50.0f;*/
 
+    float left = -mAspectRatio;
+    float right = mAspectRatio;
+    float bottom = -1.0f;
+    float top = 1.0f;
+    float near = 3.0f;
+    float far = 7.0f;
+
+    // mProjectionMatrix = Matrix::newFrustum(left, right, bottom, top, near, far);
     mProjectionMatrix = Matrix::newFrustum(left, right, bottom, top, near, far);
+
+    /*// Position the eye in front of the origin.
+    float eyeX = 0.0f;
+    float eyeY = 0.0f;
+    float eyeZ = 1.0f;
+
+    // We are looking at the origin
+    float centerX = 0.0f;
+    float centerY = 0.0f;
+    float centerZ = 0.0f;
+
+    // Set our up vector.
+    float upX = 0.0f;
+    float upY = 1.0f;
+    float upZ = 0.0f;*/
 
     // Position the eye in front of the origin.
     float eyeX = 0.0f;
     float eyeY = 0.0f;
-    float eyeZ = 1.0f;
+    float eyeZ = -3.0f;
 
     // We are looking at the origin
     float centerX = 0.0f;
@@ -160,65 +190,47 @@ void GLRenderer::change(int width, int height) {
     // model * view * projection
     mMVPMatrix->multiply(*mProjectionMatrix, *mViewMatrix);
 
-    setupScaling(width, height);
-
-    for (int i = 0; i < mTextureCollection.size(); i++) {
+    /*for (int i = 0; i < mTextureCollection.size(); i++) {
         if (mTextureCollection[i]->getIndex() == INDEX_BG) {
             mTextureCollection[i]->setSize((int)screenWidth, (int)screenHeight);
             break;
         }
-    }
+    }*/
+
+    /*mSpriteChicken->setSize(80 * mAspectRatio, 80 *mAspectRatio);
+    mSpriteChicken->setMaxFrames(42);
+    mSpriteChicken->setTranslate(0.0f, 30.0f);
+    mSpriteChicken->setIndex(INDEX_FRAME_CHICKEN);*/
 }
 
 void GLRenderer::draw() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glEnable(GL_BLEND);
+    glEnable(GL_CULL_FACE);
+
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glCullFace(GL_BACK);
 
     dirtFrame();
     //glDisable(GL_BLEND);
 }
 
 void GLRenderer::dirtFrame() {
-    /*if (!mClearSurface) {
-        //long slowTime = GLUtils::currentTimeMillis() % 100000L;
-        // int elapse = (int) ((0.01f) * (slowTime));
-        int elapse = GLUtils::getElapseRealtime();
-
-//  LOGI("getElapseReal Time: %d", GLUtils::getElapseRealtime());
-//  LOGI("elapse Time: %d", elapse);
-
-        for (unsigned i = 0; i < mTextureCollection.size(); i++) {
-
-            TextureGenerator* prevCoin = mTextureCollection.at(i);
-            if (mCurrentTime < elapse) {
-                prevCoin->setTextureId(prevCoin->getTextureId());
-                prevCoin->translate(0.0f, 10.0f);
-            }
-            prevCoin->render(prevCoin->getTextureId(), mMVPMatrix, mPositionHandle, mTexCoord, mMatrixHandle, mSamplerLoc);
-        }
-        *//*if (!hasVisibleCoin()) {
-            LOGD("All coins y < 0");
-            clearSurface(true);
-        }*//*
-
-        mCurrentTime = elapse;
-    }*/
+    int elapse = GLUtils::getElapseRealtime();
     for (unsigned i = 0; i < mTextureCollection.size(); i++) {
         TextureGenerator* texture = mTextureCollection.at(i);
-        int elapse = GLUtils::getElapseRealtime();
         // if (i == 0) continue;
 
         if (texture->getIndex() == INDEX_COIN) {
-            texture->translate(0.0f, 10.0f);
+            /*texture->translate(0.0f, 10.0f);
             if (texture->getTranslateY() > 410.0f) {
                 // mTextureCollection.pop_back();
                 mTextureCollection.erase(mTextureCollection.begin() + i);
-            }
+            }*/
         } else if (texture->getIndex() == INDEX_CLOUD_FIRST) {
             if (isUseFirstCloud) {
-                texture->translate(1.0f, 0.0f);
+                texture->translate(2.0f, 0.0f);
                 if (texture->getTranslateX() >= 30.0f) {
                     isUseSecondCloud = true;
                 }
@@ -230,7 +242,7 @@ void GLRenderer::dirtFrame() {
             }
         } else if (texture->getIndex() == INDEX_CLOUD_SECOND) {
             if (isUseSecondCloud) {
-                texture->translate(1.0f, 0.0f);
+                texture->translate(2.0f, 0.0f);
                 if (texture->getTranslateX() >= 30.0f) {
                     isUseFirstCloud = true;
                 }
@@ -240,71 +252,16 @@ void GLRenderer::dirtFrame() {
                     isUseSecondCloud = false;
                 }
             }
-        } /*else if (texture->getIndex() == INDEX_FRAME_CHICKEN) {
-
-            texture->changeFrameIndex();
-        }*/
-
-        // texture->changeFrameIndex();
-        if (mCurrentTime < elapse) {
-            LOGI("ELAPSE");
-            if (texture->getIndex() == INDEX_FRAME_CHICKEN) {
-                LOGI("CHICKEN");
-            }
-            texture->changeFrameIndex();
         }
-
-
-        /*if (isUseFirstCloud) {
-            if (texture->getIndex() == INDEX_CLOUD_FIRST) {
-                if (texture->getTranslateX() < 0.0f) {
-                    texture->translate(1.0f, 0.0f);
-                } else if (texture->getTranslateX() > 0.0f) {
-                    if (!isUseSecondCloud) isUseSecondCloud = true;
-                }
-
-                if (texture->getTranslateX() > FIXED_WIDTH) {
-                    texture->hideX();
-                    isUseFirstCloud = false;
-                }
-            }
-        }
-
-        if (isUseSecondCloud) {
-            if (texture->getIndex() == INDEX_CLOUD_SECOND) {
-                if (texture->getTranslateX() < 0.0f) {
-                    texture->translate(1.0f, 0.0f);
-                } else if (texture->getTranslateX() > 0.0f) {
-                    if (!isUseFirstCloud) isUseFirstCloud = true;
-                }
-
-                if (texture->getTranslateX() > FIXED_WIDTH) {
-                    texture->hideX();
-                    isUseSecondCloud = false;
-                }
-            }
-        }*/
-
-        //texture->render(texture->getTextureId(), mMVPMatrix, mPositionHandle, mTexCoord, mMatrixHandle, mSamplerLoc);
-        /*if (mCurrentTime < elapse) spriteNum += 1;
-        if (spriteNum > 42) {
-            spriteNum = 1;
-            //continue;
-        }*/
-        /*LOGI("LOOP.");
-        if (mCurrentTime < elapse) {
-            if (texture->getIndex() == INDEX_FRAME_CHICKEN) {
-                LOGI("CHICKEN.");
-                if (texture->isSpriteSheet()) {
-                    LOGI("Texture is sprite");
-                    texture->changeFrameIndex();
-                }
-            }
-        }*/
         texture->render(texture->getTextureId(), mMVPMatrix, mPositionHandle, mTexCoord, mMatrixHandle, mSamplerLoc);
-        //texture->renderSprite(20, 1, spriteNum, texture->getTextureId(), mMVPMatrix, mPositionHandle, mTexCoord, mMatrixHandle, mSamplerLoc);
-        mCurrentTime = elapse;
     }
+
+    /*if (mCurrentTime < elapse) {
+        mSpriteChicken->changeFrameIndex();
+    }
+    mSpriteChicken->render(mSpriteChicken->getTextureId(), mMVPMatrix, mPositionHandle, mTexCoord, mMatrixHandle, mSamplerLoc);*/
+
+    mCurrentTime = elapse;
 }
 
 void GLRenderer::drawCoin(int pieces) {
@@ -312,20 +269,16 @@ void GLRenderer::drawCoin(int pieces) {
     // LOGI()("Size of textures %d", (int) sizeof(textures));
     LOGI("screenWidth %d", screenWidth);
     LOGI("screenHeight %d", screenHeight);
-    LOGI("FIXED_WIDTH %d", FIXED_WIDTH);
-    LOGI("FIXED_HEIGHT %d", FIXED_HEIGHT);
     for (int i = 0; i < pieces; i++) {
         GLuint r = GLuint (i % TEXTURE_SIZE);
         LOGI("r = %d", r);
-        float pointX = rand() % (int)(((FIXED_WIDTH - 48) - 48) + 1) + 48;
+        float pointX = rand() % (int)(((screenWidth - 48) - 48) + 1) + 48;
         //float pointX = rand() % (FIXED_WIDTH) + 48;;
         LOGI("PointX %.2f", pointX);
         float pointY = rand() % 310 + 1;
         LOGI("PointY %.2f", pointY);
-        // Coin* coin = new Coin(r, pointX, pointY + screenHeight);
-        //Coin* coin = new Coin(r, pointX - 50.0f, pointY + (screenHeight / 2)); // Same all height
         TextureGenerator* coin = new TextureGenerator(); // Same all height
-        coin->setSize(40.0f, 40.0f);
+        coin->setSize(40, 40);
         coin->setTranslate(pointX, pointY);
         coin->setTextureId(textures[0]);
         coin->setIndex(INDEX_COIN);
@@ -334,24 +287,4 @@ void GLRenderer::drawCoin(int pieces) {
     }
     LOGI("mCoinCollectionSize = %d", (int) mTextureCollection.size());
     LOGI("drawNewCoin end");
-}
-
-void GLRenderer::setupScaling(int width, int height) {
-// The screen resolution
-    widthPixel = width;
-    heightPixel = height;
-
-    // Orientation is assumed portrait
-    //scaleX = widthPixel / 320.0f;
-    //scaleY = heightPixel / 480.0f;
-    scaleX = widthPixel / FIXED_WIDTH;
-    scaleY = heightPixel / FIXED_HEIGHT;
-
-    // Get our uniform scalier
-    if (scaleX > scaleY)
-        scaleValue = scaleY;
-    else
-        scaleValue = scaleX;
-
-    LOGD("scaleValue %.2f", scaleValue);
 }

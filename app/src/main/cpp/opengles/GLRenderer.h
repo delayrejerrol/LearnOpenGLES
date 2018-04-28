@@ -34,20 +34,13 @@ private:
     Matrix *mProjectionMatrix;
     Matrix *mMVPMatrix;
 
-    // Scale
-    float scaleY;
-    float scaleX;
-    float scaleValue;
-    // Screen size
-    float widthPixel = 320.0f;
-    float heightPixel = 480.0f;
+    // Aspect Ratio
+    float mAspectRatio;
 
     GLsizei screenWidth = 1280;
     GLsizei screenHeight = 768;
 
     static const int TEXTURE_SIZE = 8;
-    const int FIXED_WIDTH = 320;
-    const int FIXED_HEIGHT = 568;
 
     int mCurrentTime;
     int spriteNum = 0;
@@ -66,9 +59,9 @@ private:
     GLuint* mTextures;
 
     vector<TextureGenerator *> mTextureCollection;
+    TextureGenerator* mSpriteChicken;
 
     void dirtFrame();
-    void setupScaling(int width, int height);
 };
 
 

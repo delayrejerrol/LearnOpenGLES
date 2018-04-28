@@ -18,16 +18,10 @@ typedef enum {
 } Index;
 
 class TextureGenerator {
-    /*int spriteWidth, spriteHeight;
-    int texWidth, texHeight;
 
-    int tex;*/
 public:
     // The Constructor
     TextureGenerator();
-    /*TextureGenerator(int t, int tW, int tH, int sW, int sH)
-            : tex(t), texWidth(tW), texHeight(tH), spriteWidth(sW), spriteHeight(sH)
-    {}*/
 
     // The Destructor
     ~TextureGenerator();
@@ -56,7 +50,6 @@ public:
     void hideY();
     void hide();
     void render(GLuint textureId, Matrix *mMVPMatrix, GLuint positionHandle, GLuint texCoord, GLint matrixHandle, GLint samplerLoc);
-    void renderSprite(float posX, float posY, int frameIndex, GLuint textureId, Matrix *mMVPMatrix, GLuint positionHandle, GLuint texCoord, GLint matrixHandle, GLint samplerLoc);
     void translate(float deltaX, float deltaY);
 
 private:
@@ -76,7 +69,7 @@ private:
 
     bool mIsSpriteSheet;
 
-    int mCurrentFrameIndex = 1;
+    int mCurrentFrameIndex = 0;
     int mMaxFrames;
     int mTextureWidth;
     int mTextureHeight;

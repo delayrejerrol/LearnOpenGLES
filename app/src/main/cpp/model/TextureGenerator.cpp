@@ -28,14 +28,23 @@ static const GLshort mIndices[] = {
 };*/
 
 TextureGenerator::TextureGenerator() {
-    mUVCoord[0] = 1.0f;
+    /*mUVCoord[0] = 1.0f;
     mUVCoord[1] = 1.0f;
     mUVCoord[2] = 1.0f;
     mUVCoord[3] = 0.0f;
     mUVCoord[5] = 0.0f;
     mUVCoord[4] = 0.0f;
     mUVCoord[6] = 0.0f;
-    mUVCoord[7] = 1.0f;
+    mUVCoord[7] = 1.0f;*/
+
+    mUVCoord[0] = -1.0f;
+    mUVCoord[1] = -1.0f;
+    mUVCoord[2] = -1.0f;
+    mUVCoord[3] = 1.0f;
+    mUVCoord[5] = 1.0f;
+    mUVCoord[4] = 1.0f;
+    mUVCoord[6] = 1.0f;
+    mUVCoord[7] = -1.0f;
 
     mIsSpriteSheet = false;
 }
@@ -108,18 +117,17 @@ void TextureGenerator::translate(float deltaX, float deltaY) {
 }
 
 void TextureGenerator::setSize(int width, int height) {
-    //float left, float top, float right, float bottom
-    /*mTextureSize[0] = 0.0f; // Left
-    mTextureSize[1] = 0.0f;  // Top
-    mTextureSize[2] = width;  // Right
-    mTextureSize[3] = height; // Bottom*/
-
     mTextureWidth = width;
     mTextureHeight = height;
-    mTextureSize[0] = (float)mTextureWidth; // Left
+    /*mTextureSize[0] = (float)mTextureWidth;   // Left
     mTextureSize[1] = (float)mTextureHeight;  // Top
-    mTextureSize[2] = 0.0f;  // Right
-    mTextureSize[3] = 0.0f; // Bottom
+    mTextureSize[2] = 0.0f;                   // Right
+    mTextureSize[3] = 0.0f;                   // Bottom*/
+
+    mTextureSize[0] =  1.0f;   // Left
+    mTextureSize[1] =  1.0f;  // Top
+    mTextureSize[2] = -1.0f;                   // Right
+    mTextureSize[3] = -1.0f;                   // Bottom
 
     updateTransformedVertices();
 }
@@ -202,19 +210,18 @@ void TextureGenerator::render(GLuint textureId, Matrix *mMVPMatrix, GLuint posit
         const float tw = float(mSpriteWidth) / mTextureWidth;
         const float th = float(mSpriteHeight) / mTextureHeight;
         const int numPerRow = mTextureWidth / mSpriteWidth;
-        const int numPerColumn = mTextureHeight / mSpriteHeight;
-
+        // const int numPerColumn = mTextureHeight / mSpriteHeight;
         const float tx = (getFrameIndex() % numPerRow) * tw;
-        const float ty = (getFrameIndex() / numPerRow + 1) * th;
+        const float ty = (getFrameIndex() / numPerRow) * th;
 
+        mUVCoord[0] = tx;
+        mUVCoord[1] = ty + th;
         mUVCoord[2] = tx;
         mUVCoord[3] = ty;
         mUVCoord[4] = tx + tw;
         mUVCoord[5] = ty;
         mUVCoord[6] = tx + tw;
         mUVCoord[7] = ty + th;
-        mUVCoord[0] = tx;
-        mUVCoord[1] = ty + th;
     }
     // Enable generic vertex attribute array
     glEnableVertexAttribArray(positionHandle);
@@ -274,90 +281,6 @@ float TextureGenerator::getWidth() {
     return mTextureWidth;
 }
 
-void TextureGenerator::renderSprite(float posX, float posY, int frameIndex, GLuint textureId,
-                                    Matrix *mMVPMatrix, GLuint positionHandle, GLuint texCoord,
-                                    GLint matrixHandle, GLint samplerLoc) {
-
-    /*const float verts[] = {
-            posX, posY,
-            posX + spriteWidth, posY,
-            posX + spriteWidth, posY + spriteHeight,
-            posX, posY + spriteHeight
-    };
-    const float tw = float(spriteWidth) / texWidth;
-    const float th = float(spriteHeight) / texHeight;
-    const int numPerRow = texWidth / spriteWidth;
-    const int numPerColumn = texHeight / spriteHeight;
-
-    //LOGI("numPerRow: %d", numPerRow);
-    //LOGI("numPerColumn: %d", numPerColumn);
-
-    const float tx = (frameIndex % numPerRow) * tw;
-    const float ty = (frameIndex / numPerRow + 1) * th;
-
-    LOGI("tx: %.2f", tx);
-    LOGI("ty: %.2f", ty);
-    *//*const float texVerts[] = {
-            tx, ty,
-            tx + tw, ty,
-            tx + tw, ty + th,
-            tx, ty + th
-    };*//*
-
-    *//*static GLfloat mUVCoord[] = {
-            1.0f, 1.0f,
-            1.0f, 0.0f,
-            0.0f, 0.0f,
-            0.0f, 1.0f
-    };*//*
-
-    *//*mUVCoord[0] = tx;
-    mUVCoord[1] = ty;
-    mUVCoord[2] = tx + tw;
-    mUVCoord[3] = ty;
-    mUVCoord[4] = tx + tw;
-    mUVCoord[5] = ty + th;
-    mUVCoord[6] = tx;
-    mUVCoord[7] = ty + th;*//*
-
-    mUVCoord[2] = tx;
-    mUVCoord[3] = ty;
-    mUVCoord[4] = tx + tw;
-    mUVCoord[5] = ty;
-    mUVCoord[6] = tx + tw;
-    mUVCoord[7] = ty + th;
-    mUVCoord[0] = tx;
-    mUVCoord[1] = ty + th;
-
-
-    // Enable generic vertex attribute array
-    glEnableVertexAttribArray(positionHandle);
-    glEnableVertexAttribArray(texCoord);
-
-    // Prepare the triangle coordinate data
-    glVertexAttribPointer(positionHandle, 3, GL_FLOAT, GL_FALSE, 0, mVertices);
-    // Prepare the texture coordinates
-    glVertexAttribPointer(texCoord, 2, GL_FLOAT, GL_FALSE, 0, mUVCoord);
-
-    // Apply the projection and view transformation
-    glUniformMatrix4fv(matrixHandle, 1, GL_FALSE, mMVPMatrix->mData);
-    //  Set the sampler texture unit to 0, where we have saved the texture
-    glUniform1i(samplerLoc, 0);
-
-    // Pass in the texture information
-    // Set the active texture unit to texture unit 0.
-    glActiveTexture(GL_TEXTURE0);
-    // Bind the texture to this unit
-    glBindTexture(GL_TEXTURE_2D, textureId);
-
-    // Draw the triangle
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, mIndices);
-
-    // Disable generic vertex attribute array
-    glDisableVertexAttribArray(positionHandle);
-    glDisableVertexAttribArray(texCoord);*/
-}
-
 bool TextureGenerator::isSpriteSheet() {
     return mIsSpriteSheet;
 }
@@ -368,16 +291,41 @@ int TextureGenerator::getFrameIndex() {
 }
 
 void TextureGenerator::setMaxFrames(int maxNumFrames) {
+    int product = 0;
+    int x = 0;
+    int y = 0;
+    for (x = 0; x <= 10; x++) {
+        for (y = 0; y <= 10; y++) {
+            product = x*y;
+            if (product == maxNumFrames) {
+                break;
+            }
+        }
+        if (product == maxNumFrames) {
+            break;
+        }
+    }
+
+    setSpriteSize(mTextureWidth, mTextureHeight);
+
+    mTextureWidth *= x;
+    mTextureHeight *= y;
+
+    // Resize the texture when it is a sprite.
+    mTextureSize[0] = (float) mSpriteWidth * 2;   // Left
+    mTextureSize[1] = (float) mSpriteHeight * 2;  // Top
+    mTextureSize[2] = 0.0f;                       // Right
+    mTextureSize[3] = 0.0f;                       // Bottom
+
     mMaxFrames = maxNumFrames;
 }
 
 void TextureGenerator::changeFrameIndex() {
-    if (isSpriteSheet()) {
-        mCurrentFrameIndex += 1;
-        if (mCurrentFrameIndex > mMaxFrames) {
-            mCurrentFrameIndex = 1;
-        }
-        LOGI("mMaxFrames: %d", mMaxFrames);
-        LOGI("mCurrentFrameIndex: %d", mCurrentFrameIndex);
+    mCurrentFrameIndex += 1;
+
+    if (mCurrentFrameIndex >= mMaxFrames) {
+        mCurrentFrameIndex = 0;
     }
+//    LOGI("mMaxFrames: %d", mMaxFrames);
+//    LOGI("mCurrentFrameIndex: %d", mCurrentFrameIndex);
 }
